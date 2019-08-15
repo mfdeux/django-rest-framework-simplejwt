@@ -153,7 +153,7 @@ class Token:
             raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
 
     @classmethod
-    def for_user(cls, user):
+    def for_user(cls, user, organization):
         """
         Returns an authorization token for the given user that will be provided
         after authenticating the user's credentials.
@@ -162,8 +162,13 @@ class Token:
         if not isinstance(user_id, int):
             user_id = str(user_id)
 
+        organization_id = getattr(organization, api_settings.ORGANIZATION_ID_FIELD)
+        if not isinstance(organization_id, int):
+            organization_id = str(organization_id)
+
         token = cls()
         token[api_settings.USER_ID_CLAIM] = user_id
+        token[api_settings.ORGANIZATION_ID_CLAIM] = organization_id
 
         return token
 

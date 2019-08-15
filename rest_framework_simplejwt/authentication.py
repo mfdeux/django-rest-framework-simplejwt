@@ -5,6 +5,7 @@ from .exceptions import AuthenticationFailed, InvalidToken, TokenError
 from .models import TokenUser
 from .settings import api_settings
 from .state import User
+from django.core.exceptions import ObjectDoesNotExist
 
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
 
@@ -35,7 +36,10 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
         validated_token = self.get_validated_token(raw_token)
 
-        return self.get_user(validated_token), validated_token
+        user, organization = self.get_user(validated_token)
+        request.organization = organization
+
+        return user, validated_token
 
     def authenticate_header(self, request):
         return '{0} realm="{1}"'.format(
@@ -115,7 +119,19 @@ class JWTAuthentication(authentication.BaseAuthentication):
         if not user.is_active:
             raise AuthenticationFailed(_('User is inactive'), code='user_inactive')
 
-        return user
+
+        try:
+            organization_id = validated_token[api_settings.ORGANIZATION_ID_CLAIM]
+        except KeyError:
+            raise InvalidToken(_('Token contained no recognizable organization identification'))
+
+
+        try:
+            organization = user.organization_memberships.get(**{api_settings.ORGANIZATION_ID_FIELD: organization_id})
+        except ObjectDoesNotExist:
+            raise AuthenticationFailed(_('Organization not found'), code='organization_not_found')
+
+        return user, organization
 
 
 class JWTTokenUserAuthentication(JWTAuthentication):

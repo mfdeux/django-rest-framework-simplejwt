@@ -5,6 +5,7 @@ from rest_framework import exceptions, serializers
 from .settings import api_settings
 from .state import User
 from .tokens import RefreshToken, SlidingToken, UntypedToken
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class PasswordField(serializers.CharField):
@@ -28,6 +29,7 @@ class TokenObtainSerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
 
         self.fields[self.username_field] = serializers.CharField()
+        self.fields['organization'] = serializers.CharField()
         self.fields['password'] = PasswordField()
 
     def validate(self, attrs):
@@ -42,6 +44,7 @@ class TokenObtainSerializer(serializers.Serializer):
 
         self.user = authenticate(**authenticate_kwargs)
 
+
         # Prior to Django 1.10, inactive users could be authenticated with the
         # default `ModelBackend`.  As of Django 1.10, the `ModelBackend`
         # prevents inactive users from authenticating.  App designers can still
@@ -55,6 +58,12 @@ class TokenObtainSerializer(serializers.Serializer):
                 'no_active_account',
             )
 
+
+        try:
+            self.organization = self.user.organization_memberships.get(organization_id=attrs['organization'])
+        except ObjectDoesNotExist:
+            raise
+
         return {}
 
     @classmethod
@@ -64,13 +73,13 @@ class TokenObtainSerializer(serializers.Serializer):
 
 class TokenObtainPairSerializer(TokenObtainSerializer):
     @classmethod
-    def get_token(cls, user):
-        return RefreshToken.for_user(user)
+    def get_token(cls, user, organization):
+        return RefreshToken.for_user(user, organization)
 
     def validate(self, attrs):
         data = super().validate(attrs)
 
-        refresh = self.get_token(self.user)
+        refresh = self.get_token(self.user, self.organization)
 
         data['refresh'] = str(refresh)
         data['access'] = str(refresh.access_token)
