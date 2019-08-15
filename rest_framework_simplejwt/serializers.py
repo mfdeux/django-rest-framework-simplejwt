@@ -62,6 +62,7 @@ class TokenObtainSerializer(serializers.Serializer):
         try:
             membership = self.user.organization_memberships.get(organization_id=attrs['organization'])
             self.organization = membership.organization
+            print(self.organization)
         except ObjectDoesNotExist:
             raise
 

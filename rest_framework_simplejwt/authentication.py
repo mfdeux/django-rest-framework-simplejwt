@@ -127,7 +127,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
 
 
         try:
-            membership = user.organization_memberships.get(**{api_settings.ORGANIZATION_ID_FIELD: organization_id})
+            membership = user.organization_memberships.get(**{api_settings.ORGANIZATION_ID_CLAIM: organization_id})
         except ObjectDoesNotExist:
             raise AuthenticationFailed(_('Organization not found'), code='organization_not_found')
 
