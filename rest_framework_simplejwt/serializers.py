@@ -60,14 +60,15 @@ class TokenObtainSerializer(serializers.Serializer):
 
 
         try:
-            self.organization = self.user.organization_memberships.get(organization_id=attrs['organization'])
+            membership = self.user.organization_memberships.get(organization_id=attrs['organization'])
+            self.organization = membership.organization
         except ObjectDoesNotExist:
             raise
 
         return {}
 
     @classmethod
-    def get_token(cls, user):
+    def get_token(cls, user, organization):
         raise NotImplementedError('Must implement `get_token` method for `TokenObtainSerializer` subclasses')
 
 
