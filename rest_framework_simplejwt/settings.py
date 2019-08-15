@@ -24,7 +24,6 @@ DEFAULTS = {
     'USER_ID_CLAIM': 'user_id',
     'ORGANIZATION_ID_FIELD': 'id',
     'ORGANIZATION_ID_CLAIM': 'organization_id',
-    'ORGANIZATION_MODEL': '',
 
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',

@@ -94,10 +94,10 @@ class Token:
         self.check_exp()
 
         # Ensure token id is present
-        if api_settings.JTI_CLAIM not in self.payload:
-            raise TokenError(_('Token has no id'))
+        # if api_settings.JTI_CLAIM not in self.payload:
+        #     raise TokenError(_('Token has no id'))
 
-        self.verify_token_type()
+        # self.verify_token_type()
 
     def verify_token_type(self):
         """
